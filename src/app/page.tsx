@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useState, useRef } from 'react';
+import { Button } from '../components/Button';
 
 export default function Home() {
   const [isListening, setIsListening] = useState(false);
@@ -61,15 +62,15 @@ export default function Home() {
       <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
         <h1 className="text-4xl mx-auto">🎤 Speech Recognition</h1>
         <div className="flex gap-6 my-4 mx-0 justify-center items-center w-full">
-          <button className="rounded-2xl my-4 mx-0 py-2 px-4 bg-amber-200 disabled:text-gray-400" onClick={handleStart} disabled={isListening}>
+          <Button onClick={handleStart} disabled={isListening}>
             Start Listening
-          </button>
-          <button className="rounded-2xl my-4 mx-0 py-2 px-4 bg-amber-200 disabled:!text-gray-400" onClick={handleStop} disabled={!isListening}>
+          </Button>
+          <Button onClick={handleStop} disabled={!isListening}>
             Stop Listening
-          </button>
-          <button className="rounded-2xl my-4 mx-0 py-2 px-4 bg-amber-200 disabled:!text-gray-400" onClick={handleClear} disabled={isListening}>
+          </Button>
+          <Button onClick={handleClear} disabled={isListening}>
             Clear Transcript
-          </button>
+          </Button>
         </div>
         <div className="mt-8 max-w-xl mx-auto text-left">
           <h2>Transcript:</h2>
