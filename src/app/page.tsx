@@ -2,10 +2,12 @@
 
 import { useEffect, useState, useRef } from 'react';
 import { Button } from '../components/Button';
+import { searchResults } from './search-results';
 
 export default function Home() {
   const [isListening, setIsListening] = useState(false);
   const [transcript, setTranscript] = useState('');
+  const [searchResultImageSrc, setSearchResultImageSrc] = useState('');
   const recognitionRef = useRef<SpeechRecognition | null>(null);
 
   useEffect(() => {
@@ -44,6 +46,8 @@ export default function Home() {
   }, []);
 
   const handleStart = () => {
+    setTranscript('');
+    setSearchResultImageSrc('');
     recognitionRef.current?.start();
     setIsListening(true);
   };
@@ -51,6 +55,21 @@ export default function Home() {
   const handleStop = () => {
     recognitionRef.current?.stop();
     setIsListening(false);
+
+    if (transcript.includes('show') && (transcript.includes('cat') || transcript.includes('dog'))) {
+      const animal = transcript.includes('cat') ? 'cat' : 'dog';
+      const color = (() => {
+        if ( transcript.includes('black')) return 'black';
+        if ( transcript.includes('blue')) return 'blue';
+        if ( transcript.includes('gray')) return 'gray';
+        if ( transcript.includes('green')) return 'green';
+        if ( transcript.includes('orange')) return 'orange';
+        if ( transcript.includes('red')) return 'red';
+        return 'noMatch';
+      })();
+      
+      setSearchResultImageSrc((searchResults[animal] as any)[color]);
+    }
   };
 
   const handleClear = () => {
@@ -58,25 +77,34 @@ export default function Home() {
   }
 
   return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
+    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-4 gap-8 md:p-8 pb-20 md:gap-16 sm:p-20">
       <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <h1 className="text-4xl mx-auto">🎤 Speech Recognition</h1>
-        <div className="flex gap-6 my-4 mx-0 justify-center items-center w-full">
+        <h1 className="text-3xl md:text-4xl mx-auto">🎤 Speech Recognition</h1>
+        <div className="flex gap-6 my-4 mx-0 justify-center items-center w-full flex-wrap">
           <Button onClick={handleStart} disabled={isListening}>
-            Start Listening
+            Start Talking
           </Button>
           <Button onClick={handleStop} disabled={!isListening}>
-            Stop Listening
+            Stop Talking
           </Button>
           <Button onClick={handleClear} disabled={isListening}>
             Clear Transcript
           </Button>
         </div>
-        <div className="mt-8 max-w-xl mx-auto text-left">
-          <h2>Transcript:</h2>
+        <p className="italic">
+          (To show a cat or dog: Click "Start Talking", ask it to show you a cat or a dog of any color, then click "Stop talking")
+        </p>
+        <div className="max-w-xl mx-auto text-left">
+          <h2 className="font-bold">Transcript:</h2>
           <p>{transcript}</p>
           <p id="interim" style={{ color: 'gray' }}></p>
         </div>
+        {searchResultImageSrc && (
+          <div className="max-w-xl mx-auto text-left">
+            <h3 className="font-bold">Search result:</h3>
+            <img src={searchResultImageSrc} />
+          </div>
+        )}
       </main>
       <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center border-t-2 border-t-amber-600">
         Was this cool or what?!
