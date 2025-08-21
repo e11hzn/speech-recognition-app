@@ -17,8 +17,13 @@ export default function Home() {
     transcript: null,
   })
   const recognitionRef = useRef<SpeechRecognition | null>(null);
+  const hasInitialized = useRef(false);
 
   useEffect(() => {
+    if (hasInitialized.current) return;
+
+    hasInitialized.current = true;
+
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SpeechRecognition) {
       alert('Speech Recognition not supported in this browser.');
@@ -27,17 +32,12 @@ export default function Home() {
 
     const recognition = new SpeechRecognition();
     recognition.continuous = true;
-    recognition.interimResults = true;
     recognition.lang = 'en-US';
 
     recognition.onresult = (event) => {
-      let interimTranscript = '';
       for (let i = event.resultIndex; i < event.results.length; ++i) {
-        const transcriptChunk = event.results[i][0].transcript;
         if (event.results[i].isFinal) {
-          handleStop(transcriptChunk);
-        } else {
-          interimTranscript += transcriptChunk;
+          handleStop(event.results[i][0].transcript);
         }
       }
     };
