@@ -34,7 +34,6 @@ export default function Home() {
       let interimTranscript = '';
       for (let i = event.resultIndex; i < event.results.length; ++i) {
         const transcriptChunk = event.results[i][0].transcript;
-        console.log('event.results[i].isFinal', !!event.results[i].isFinal);
         if (event.results[i].isFinal) {
           handleStop(transcriptChunk);
         } else {
@@ -77,6 +76,9 @@ export default function Home() {
       
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       matchingSearchResultImageSrc = (searchResults[animal] as any)[color];
+      if (!matchingSearchResultImageSrc) {
+        matchingSearchResultImageSrc = searchResults[animal].noMatch;
+      }
     }
 
     setState({
