@@ -4,10 +4,18 @@ import { useEffect, useState, useRef } from 'react';
 import { Button } from '../components/Button';
 import { searchResults } from './search-results';
 
+type State = {
+  isListening: boolean;
+  searchResultImageSrc: string | null;
+  transcript: string | null;
+};
+
 export default function Home() {
-  const [isListening, setIsListening] = useState(false);
-  const [transcript, setTranscript] = useState('');
-  const [searchResultImageSrc, setSearchResultImageSrc] = useState('');
+  const [state, setState] = useState<State>({
+    isListening: false,
+    searchResultImageSrc: null,
+    transcript: null,
+  })
   const recognitionRef = useRef<SpeechRecognition | null>(null);
 
   useEffect(() => {
@@ -26,15 +34,12 @@ export default function Home() {
       let interimTranscript = '';
       for (let i = event.resultIndex; i < event.results.length; ++i) {
         const transcriptChunk = event.results[i][0].transcript;
+        console.log('event.results[i].isFinal', !!event.results[i].isFinal);
         if (event.results[i].isFinal) {
-          setTranscript((prev) => prev + transcriptChunk + ' ');
+          handleStop(transcriptChunk);
         } else {
           interimTranscript += transcriptChunk;
         }
-      }
-      const iterimElement = document.getElementById('interim');
-      if (iterimElement) {
-        iterimElement.innerText = interimTranscript;
       }
     };
 
@@ -46,35 +51,47 @@ export default function Home() {
   }, []);
 
   const handleStart = () => {
-    setTranscript('');
-    setSearchResultImageSrc('');
+    setState({
+      isListening: true,
+      searchResultImageSrc: null,
+      transcript: null,
+    });
     recognitionRef.current?.start();
-    setIsListening(true);
   };
 
-  const handleStop = () => {
+  const handleStop = (transcriptChunk: string) => {
+    let matchingSearchResultImageSrc: string | null = null;
     recognitionRef.current?.stop();
-    setIsListening(false);
 
-    if (transcript.includes('show') && (transcript.includes('cat') || transcript.includes('dog'))) {
-      const animal = transcript.includes('cat') ? 'cat' : 'dog';
+    if (transcriptChunk.includes('show') && (transcriptChunk.includes('cat') || transcriptChunk.includes('dog'))) {
+      const animal = transcriptChunk.includes('cat') ? 'cat' : 'dog';
       const color = (() => {
-        if ( transcript.includes('black')) return 'black';
-        if ( transcript.includes('blue')) return 'blue';
-        if ( transcript.includes('gray')) return 'gray';
-        if ( transcript.includes('green')) return 'green';
-        if ( transcript.includes('orange')) return 'orange';
-        if ( transcript.includes('red')) return 'red';
+        if ( transcriptChunk.includes('black')) return 'black';
+        if ( transcriptChunk.includes('blue')) return 'blue';
+        if ( transcriptChunk.includes('gray')) return 'gray';
+        if ( transcriptChunk.includes('green')) return 'green';
+        if ( transcriptChunk.includes('orange')) return 'orange';
+        if ( transcriptChunk.includes('red')) return 'red';
         return 'noMatch';
       })();
       
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      setSearchResultImageSrc((searchResults[animal] as any)[color]);
+      matchingSearchResultImageSrc = (searchResults[animal] as any)[color];
     }
+
+    setState({
+      isListening: false,
+      searchResultImageSrc: matchingSearchResultImageSrc,
+      transcript: transcriptChunk,
+    });
   };
 
   const handleClear = () => {
-    setTranscript('');
+    setState({
+      isListening: false,
+      searchResultImageSrc: null,
+      transcript: null,
+    });
   }
 
   return (
@@ -82,14 +99,11 @@ export default function Home() {
       <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
         <h1 className="text-3xl md:text-4xl mx-auto">🎤 Speech Recognition</h1>
         <div className="flex gap-6 my-4 mx-0 justify-center items-center w-full flex-wrap">
-          <Button onClick={handleStart} disabled={isListening}>
+          <Button onClick={handleStart} disabled={state.isListening}>
             Start Talking
           </Button>
-          <Button onClick={handleStop} disabled={!isListening}>
-            Stop Talking
-          </Button>
-          <Button onClick={handleClear} disabled={isListening}>
-            Clear Transcript
+          <Button onClick={handleClear} disabled={!state.transcript}>
+            Clear
           </Button>
         </div>
         <p className="italic">
@@ -97,13 +111,12 @@ export default function Home() {
         </p>
         <div className="max-w-xl mx-auto text-left">
           <h2 className="font-bold">Transcript:</h2>
-          <p>{transcript}</p>
-          <p id="interim" style={{ color: 'gray' }}></p>
+          <p>{state.transcript}</p>
         </div>
-        {searchResultImageSrc && (
+        {state.searchResultImageSrc && (
           <div className="max-w-xl mx-auto text-left">
             <h3 className="font-bold">Search result:</h3>
-            <img src={searchResultImageSrc} />
+            <img src={state.searchResultImageSrc} />
           </div>
         )}
       </main>
