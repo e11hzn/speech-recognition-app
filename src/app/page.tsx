@@ -109,7 +109,7 @@ export default function Home() {
           </Button>
         </div>
         <p className="italic">
-          (To show a cat or dog: Click &quot;Start Talking&quot;, ask it to show you a cat or a dog of any color, then click &quot;Stop talking&quot;)
+          (To show a cat or dog: Click &quot;Start Talking&quot;, ask it to show you a cat or a dog of any color, then wait)
         </p>
         <div className="max-w-xl mx-auto text-left">
           <h2 className="font-bold">Transcript:</h2>
